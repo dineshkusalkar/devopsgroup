@@ -7,7 +7,7 @@ trigger:
 - main
 
 pool:
- name: Agent2
+ name: Agent3
 
 steps:
 - script: echo Hello, world!
