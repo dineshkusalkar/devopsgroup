@@ -6,9 +6,24 @@ trigger:
 pool:
  name: Agent3
 
+stages:
+- stage: Deployment
+  displayName: 'deployment stage1'
+  jobs:
+  - job: InfrastructureDeployment
+    displayName: 'Deploy Instrastructure'
+    steps:
+    - checkout: self
+
+    - task: AzureCLI@2
+      inputs:
+        azureSubscription: 'Free Trial(7c2ed10b-da64-4ca3-8747-92f46fa59d9a)'
+        scriptType: 'bash'
+        scriptLocation: 'inlineScript'
+        inlineScript: |
+          terraform init
+          terraform plan
+          terraform apply --auto-approve
 
 
-- script: |
-    echo Add other tasks to build, test, and deploy your project.
-    echo See https://aka.ms/yaml
-  displayName: 'Run a multi-line script'
+
