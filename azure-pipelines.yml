@@ -26,4 +26,53 @@ stages:
           terraform apply --auto-approve
 
 
+####################################################################################
+
+
+
+
+trigger:
+  branches:
+    include:
+      - main
+
+pool:
+  name: Default
+
+stages:
+- stage: Deployment
+  displayName: 'Deployment Stage'
+  jobs:
+  - job: InfrastructureDeployment
+    displayName: 'Deploy Infrastructure'
+    steps:
+    - checkout: self
+
+    - task: AzureCLI@2
+      inputs:
+        azureSubscription: 'myapp vmss'
+        scriptType: 'bash'
+        scriptLocation: 'inlineScript'
+        inlineScript: |
+          cd $(Build.SourcesDirectory)/terraform-files
+          terraform init -reconfigure -backend-config="access_key=$(TF_BACKEND_ACCESS_KEY)"
+          terraform plan
+          terraform apply --auto-approve
+      displayName: 'Terraform plan and apply'
+
+    - task: AzureCLI@2
+      inputs:
+        azureSubscription: 'myapp vmss'
+        scriptType: 'bash'
+        scriptLocation: 'inlineScript'
+        inlineScript: |
+          # Get the instance IDs of all instances within the VM Scale Set
+          instance_ids=$(az vmss list-instances --resource-group practise-project35 --name ewit35 --query "[].instanceId" --output tsv)
+          
+          for instance_id in $instance_ids; do
+            az vmss run-command invoke --resource-group practise-project35 --name ewit35 --instance-id $instance_id --command-id RunShellScript --scripts 'curl -o custom_script3.sh https://sore1.blob.core.windows.net/new1/custom_script3.sh && chmod +x custom_script3.sh && ./custom_script3.sh'
+          done
+      displayName: 'Shell script'
+
+
 
