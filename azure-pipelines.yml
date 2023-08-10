@@ -17,7 +17,7 @@ stages:
 
     - task: AzureCLI@2
       inputs:
-        azureSubscription: 'Free Trial(7c2ed10b-da64-4ca3-8747-92f46fa59d9a)'
+        azureSubscription: 'mysp'
         scriptType: 'bash'
         scriptLocation: 'inlineScript'
         inlineScript: |
@@ -39,14 +39,15 @@ trigger:
 pool:
   name: Default
 
-stages:
+stages:   // Stages help you break down your pipeline into different parts  &  Common stages might include "Build," "Test," "Deploy to Staging," and "Deploy to Production."
+
 - stage: Deployment
   displayName: 'Deployment Stage'
-  jobs:
+  jobs:       // A job is a collection of steps that are executed on a specific agent 
   - job: InfrastructureDeployment
     displayName: 'Deploy Infrastructure'
-    steps:
-    - checkout: self
+    steps:     // A step is a single unit of work within a job  && The steps represent the specific tasks that are executed within each job.
+    - checkout: self    // these command instruct the CICD pipeline to checkout the sourecode from repo where pipeline is defined.
 
     - task: AzureCLI@2
       inputs:
@@ -56,6 +57,7 @@ stages:
         inlineScript: |
           cd $(Build.SourcesDirectory)/terraform-files
           terraform init -reconfigure -backend-config="access_key=$(TF_BACKEND_ACCESS_KEY)"
+          terraform workspace new Dev
           terraform plan
           terraform apply --auto-approve
       displayName: 'Terraform plan and apply'
