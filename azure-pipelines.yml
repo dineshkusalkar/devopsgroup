@@ -1,5 +1,30 @@
+trigger:
+- main
 
+pool:
+  name: Agent02
 
+stages:
+  - stage: Deployment
+    displayName: "stage1"
+    jobs:
+      - job: infrastructure_deployment
+        displayName: "Deplouy infrastructure"
+        steps:
+          - checkout: self
+
+          - task: AzureCLI@2
+            inputs:
+              azureSubscription: 'mysp'
+              scriptType: 'bash'
+              scriptLocation: 'inlineScript'
+              inlineScript: |
+                terraform init -reconfigure -backend-config="access_key=$(TF_BACKEND_ACCESS_KEY)"
+                terraform workspace new Dev
+                terraform plan
+                terraform apply --auto-approve
+            displayName: "terraform plan & apply"
+#################################################################################################################
 trigger:
 - main
 
